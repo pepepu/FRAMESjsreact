@@ -6,7 +6,7 @@
     background-color: #f8f9fa; /* Ensure page has a light bg */
 }
 
-/* --- Header Styling (*** EDITED ***) --- */
+/* --- Header Styling (* EDITED *) --- */
 .header {
     display: flex;
     justify-content: space-between;
@@ -82,7 +82,7 @@
     background-color: #b02a37; /* RED hover */
 }
 
-/* --- Hero Section Styling (*** EDITED ***) --- */
+/* --- Hero Section Styling (* EDITED *) --- */
 .hero-section {
     position: relative;
     height: 100vh; 
