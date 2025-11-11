@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 // Re-import Link for navigation
 import { Link, useNavigate } from 'react-router-dom';
 import './LandingPage.css';
@@ -18,13 +18,21 @@ const AuthPanel = ({ panel, setPanel }) => {
   const [selectedCourses, setSelectedCourses] = useState([]); // selected courses for step 3
   const [selectedRole, setSelectedRole] = useState(''); // selected role for login/signup
   const [showRoleSelection, setShowRoleSelection] = useState(false); // show role selection for signup
+  const signupPanelRef = useRef(null); // scroll container for signup modal
+
+  // Camera capture state/refs
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const streamRef = useRef(null);
+  const [faceCapture, setFaceCapture] = useState(null); // dataURL of captured image
   
   // Form data state
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     middleInitial: '',
-    tupmId: '',
+    tupmYear: '',
+    tupmSerial: '',
     email: '',
     contactNumber: '',
     homeAddress: '',
@@ -33,7 +41,8 @@ const AuthPanel = ({ panel, setPanel }) => {
     section: '',
     college: '',
     status: '',
-    term: ''
+    term: '',
+    handledSections: []
   });
 
   // Available courses for BSIT 4th year
@@ -52,13 +61,34 @@ const AuthPanel = ({ panel, setPanel }) => {
     { code: "DBSYS1", name: "Database Systems" },
   ];
 
+  // Example available sections for faculty handled sections checklist
+  const availableSections = [
+    'BSIT-4A',
+    'BSIT-4B',
+    'BSIT-4C',
+    'BSIT-3A',
+    'BSIT-3B',
+  ];
+
   const isLogin = panel === "login";
   const title = isLogin
     ? <>Welcome <span className="auth-title-highlight">Back!</span></>
     : <>Register to your <span className="auth-title-highlight">Class now</span></>;
 
-  const handleNext = () => setStep((prev) => prev + 1);
-  const handleBack = () => setStep((prev) => prev - 1);
+  const scrollSignupTop = () => {
+    if (signupPanelRef.current) {
+      signupPanelRef.current.scrollTop = 0;
+    }
+  };
+
+  const handleNext = () => {
+    setStep((prev) => prev + 1);
+    scrollSignupTop();
+  };
+  const handleBack = () => {
+    setStep((prev) => prev - 1);
+    scrollSignupTop();
+  };
 
   const handleCourseToggle = (courseCode) => {
     setSelectedCourses((prev) => {
@@ -67,6 +97,16 @@ const AuthPanel = ({ panel, setPanel }) => {
       } else {
         return [...prev, courseCode];
       }
+    });
+  };
+
+  const handleSectionToggle = (sectionCode) => {
+    setFormData((prev) => {
+      const current = prev.handledSections || [];
+      const next = current.includes(sectionCode)
+        ? current.filter((s) => s !== sectionCode)
+        : [...current, sectionCode];
+      return { ...prev, handledSections: next };
     });
   };
 
@@ -79,11 +119,13 @@ const AuthPanel = ({ panel, setPanel }) => {
     setSelectedCourses([]);
     setSelectedRole('');
     setShowRoleSelection(true);
+    setFaceCapture(null);
     setFormData({
       firstName: '',
       lastName: '',
       middleInitial: '',
-      tupmId: '',
+      tupmYear: '',
+      tupmSerial: '',
       email: '',
       contactNumber: '',
       homeAddress: '',
@@ -92,7 +134,8 @@ const AuthPanel = ({ panel, setPanel }) => {
       section: '',
       college: '',
       status: '',
-      term: ''
+      term: '',
+      handledSections: []
     });
   };
 
@@ -106,6 +149,59 @@ const AuthPanel = ({ panel, setPanel }) => {
       setSelectedRole('');
     }
   }, [panel]);
+
+  // Start/stop camera when entering/leaving Step 4 (face capture)
+  useEffect(() => {
+    const startCamera = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          streamRef.current = stream;
+          await videoRef.current.play();
+        }
+      } catch (err) {
+        console.error('Unable to access camera', err);
+      }
+    };
+    const stopCamera = () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop());
+        streamRef.current = null;
+      }
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
+    };
+
+    if (!isLogin && !showRoleSelection && step === 4) {
+      startCamera();
+    } else {
+      stopCamera();
+    }
+
+    return () => {
+      // ensure cleanup when unmounting
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop());
+        streamRef.current = null;
+      }
+    };
+  }, [isLogin, showRoleSelection, step]);
+
+  const handleCapture = () => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas) return;
+    const width = video.videoWidth || 640;
+    const height = video.videoHeight || 480;
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, width, height);
+    const dataUrl = canvas.toDataURL('image/png');
+    setFaceCapture(dataUrl);
+  };
 
   const handleRoleSelect = (role) => {
     setSelectedRole(role);
@@ -198,7 +294,7 @@ const AuthPanel = ({ panel, setPanel }) => {
             onClick={() => setPanel(null)}
           ></div>
           <div class="signup-overlay visible">
-  <div class="signup-panel">
+  <div class="signup-panel" ref={signupPanelRef}>
               {showRoleSelection ? (
                 <>
                   <h2 className="auth-form-title">Select Your Role</h2>
@@ -244,7 +340,7 @@ const AuthPanel = ({ panel, setPanel }) => {
                   </div>
                   {/* Step Indicators */}
                   <div className="signup-step-indicators">
-                    {[1, 2, 3, 4].map((n) => (
+                    {[1, 2, 3, 4, 5].map((n) => (
                       <div key={n} className={`step-circle ${step >= n ? "active" : ""}`}>
                         {n}
                       </div>
@@ -291,9 +387,20 @@ const AuthPanel = ({ panel, setPanel }) => {
                         <span className="tupm-prefix">TUPM -</span>
                         <input 
                           type="text" 
-                          placeholder="Enter ID number"
-                          value={formData.tupmId}
-                          onChange={(e) => setFormData({...formData, tupmId: e.target.value})}
+                          placeholder="YY"
+                          maxLength="2"
+                          value={formData.tupmYear}
+                          onChange={(e) => setFormData({...formData, tupmYear: e.target.value})}
+                          className="tupm-year-input"
+                        />
+                        <span className="tupm-sep">-</span>
+                        <input 
+                          type="text" 
+                          placeholder="####"
+                          maxLength="4"
+                          value={formData.tupmSerial}
+                          onChange={(e) => setFormData({...formData, tupmSerial: e.target.value})}
+                          className="tupm-serial-input"
                         />
                       </div>
                     </div>
@@ -353,80 +460,148 @@ const AuthPanel = ({ panel, setPanel }) => {
                 </div>
               )}
 
-              {/* Step 2: Program Student Details */}
+              {/* Step 2: Details (varies by role) */}
               {step === 2 && (
                 <div className="signup-step-container">
-                  <h3 className="step-title">Step 2: Program Student Details</h3>
+                  <h3 className="step-title">
+                    {selectedRole === 'student' && 'Step 2: Program Student Details'}
+                    {selectedRole === 'faculty' && 'Step 2: Faculty Details'}
+                    {selectedRole === 'admin' && 'Step 2: Admin Details'}
+                  </h3>
                   <div className="signup-step">
-                    <div className="auth-form-group full-width">
-                      <label>Course</label>
-                      <input 
-                        type="text" 
-                        placeholder="Enter your course"
-                        value={formData.course}
-                        onChange={(e) => setFormData({...formData, course: e.target.value})}
-                      />
-                    </div>
-                    <div className="auth-form-group">
-                      <label>Year</label>
-                      <select
-                        value={formData.year}
-                        onChange={(e) => setFormData({...formData, year: e.target.value})}
-                      >
-                        <option value="">Select Year</option>
-                        <option value="1">1st Year</option>
-                        <option value="2">2nd Year</option>
-                        <option value="3">3rd Year</option>
-                        <option value="4">4th Year</option>
-                        <option value="5">5th Year</option>
-                      </select>
-                    </div>
-                    <div className="auth-form-group">
-                      <label>Section</label>
-                      <input 
-                        type="text" 
-                        placeholder="e.g., A, B, C"
-                        value={formData.section}
-                        onChange={(e) => setFormData({...formData, section: e.target.value})}
-                      />
-                    </div>
-                    <div className="auth-form-group full-width">
-                      <label>College</label>
-                      <select
-                        value={formData.college}
-                        onChange={(e) => setFormData({...formData, college: e.target.value})}
-                      >
-                        <option value="">Select College</option>
-                        <option value="CET">College of Engineering and Technology</option>
-                        <option value="CAS">College of Arts and Sciences</option>
-                        <option value="CIT">College of Industrial Technology</option>
-                        <option value="COE">College of Education</option>
-                        <option value="COA">College of Architecture</option>
-                        <option value="COT">College of Technology</option>
-                      </select>
-                    </div>
-                    <div className="auth-form-group">
-                      <label>Status</label>
-                      <select
-                        value={formData.status}
-                        onChange={(e) => setFormData({...formData, status: e.target.value})}
-                      >
-                        <option value="">Select Status</option>
-                        <option value="regular">Regular</option>
-                        <option value="irregular">Irregular</option>
-                      </select>
-                    </div>
-                    <div className="auth-form-group">
-                      <label>Term</label>
-                      <select
-                        value={formData.term}
-                        onChange={(e) => setFormData({...formData, term: e.target.value})}
-                      >
-                        <option value="">Select Term</option>
-                        <option value="first-sem">First Semester</option>
-                        <option value="second-sem">Second Semester</option>
-                      </select>
-                    </div>
+                    {selectedRole === 'student' && (
+                      <>
+                        <div className="auth-form-group full-width">
+                          <label>Course</label>
+                          <input 
+                            type="text" 
+                            placeholder="Enter your course"
+                            value={formData.course}
+                            onChange={(e) => setFormData({...formData, course: e.target.value})}
+                          />
+                        </div>
+                        <div className="auth-form-group">
+                          <label>Year</label>
+                          <select
+                            value={formData.year}
+                            onChange={(e) => setFormData({...formData, year: e.target.value})}
+                          >
+                            <option value="">Select Year</option>
+                            <option value="1">1st Year</option>
+                            <option value="2">2nd Year</option>
+                            <option value="3">3rd Year</option>
+                            <option value="4">4th Year</option>
+                            <option value="5">5th Year</option>
+                          </select>
+                        </div>
+                        <div className="auth-form-group">
+                          <label>Section</label>
+                          <input 
+                            type="text" 
+                            placeholder="e.g., A, B, C"
+                            value={formData.section}
+                            onChange={(e) => setFormData({...formData, section: e.target.value})}
+                          />
+                        </div>
+                        <div className="auth-form-group full-width">
+                          <label>College</label>
+                          <select
+                            value={formData.college}
+                            onChange={(e) => setFormData({...formData, college: e.target.value})}
+                          >
+                            <option value="">Select College</option>
+                            <option value="CET">College of Engineering and Technology</option>
+                            <option value="CAS">College of Arts and Sciences</option>
+                            <option value="CIT">College of Industrial Technology</option>
+                            <option value="COE">College of Education</option>
+                            <option value="COA">College of Architecture</option>
+                            <option value="COT">College of Technology</option>
+                          </select>
+                        </div>
+                        <div className="auth-form-group">
+                          <label>Status</label>
+                          <select
+                            value={formData.status}
+                            onChange={(e) => setFormData({...formData, status: e.target.value})}
+                          >
+                            <option value="">Select Status</option>
+                            <option value="regular">Regular</option>
+                            <option value="irregular">Irregular</option>
+                          </select>
+                        </div>
+                        <div className="auth-form-group">
+                          <label>Term</label>
+                          <select
+                            value={formData.term}
+                            onChange={(e) => setFormData({...formData, term: e.target.value})}
+                          >
+                            <option value="">Select Term</option>
+                            <option value="first-sem">First Semester</option>
+                            <option value="second-sem">Second Semester</option>
+                          </select>
+                        </div>
+                      </>
+                    )}
+
+                    {selectedRole === 'faculty' && (
+                      <>
+                        <div className="auth-form-group full-width">
+                          <label>Handled Sections</label>
+                          <div className="course-list">
+                            {availableSections.map((sec) => (
+                              <div key={sec} className="course-item">
+                                <label className="course-checkbox-label">
+                                  <input
+                                    type="checkbox"
+                                    checked={(formData.handledSections || []).includes(sec)}
+                                    onChange={() => handleSectionToggle(sec)}
+                                    className="course-checkbox"
+                                  />
+                                  <span className="course-name">{sec}</span>
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="auth-form-group full-width">
+                          <label>College</label>
+                          <select
+                            value={formData.college}
+                            onChange={(e) => setFormData({...formData, college: e.target.value})}
+                          >
+                            <option value="">Select College</option>
+                            <option value="CET">College of Engineering and Technology</option>
+                            <option value="CAS">College of Arts and Sciences</option>
+                            <option value="CIT">College of Industrial Technology</option>
+                            <option value="COE">College of Education</option>
+                            <option value="COA">College of Architecture</option>
+                            <option value="COT">College of Technology</option>
+                          </select>
+                        </div>
+                        {/* TUPM ID captured in Step 1 */}
+                      </>
+                    )}
+
+                    {selectedRole === 'admin' && (
+                      <>
+                        <div className="auth-form-group full-width">
+                          <label>College (admin holds)</label>
+                          <select
+                            value={formData.college}
+                            onChange={(e) => setFormData({...formData, college: e.target.value})}
+                          >
+                            <option value="">Select College</option>
+                            <option value="CET">College of Engineering and Technology</option>
+                            <option value="CAS">College of Arts and Sciences</option>
+                            <option value="CIT">College of Industrial Technology</option>
+                            <option value="COE">College of Education</option>
+                            <option value="COA">College of Architecture</option>
+                            <option value="COT">College of Technology</option>
+                          </select>
+                        </div>
+                        {/* Personal info and TUPM ID captured in Step 1 */}
+                      </>
+                    )}
                   </div>
                   <div className="step-buttons">
                     <button className="auth-back-button" onClick={handleBack}>Back</button>
@@ -435,59 +610,70 @@ const AuthPanel = ({ panel, setPanel }) => {
                 </div>
               )}
 
-              {/* Step 3: Class Registration */}
+              {/* Step 3: Course Assignment (varies by role) */}
               {step === 3 && (
                 <div className="signup-step-container">
-                  <h3 className="step-title">Step 3: Class Registration</h3>
-                  <div className="class-registration-container">
-                    {/* Left Column: Available Courses */}
-                    <div className="course-pool-column">
-                      <h4 className="column-title">Available Courses</h4>
-                      <div className="course-list">
-                        {availableCourses.map((course) => (
-                          <div key={course.code} className="course-item">
-                            <label className="course-checkbox-label">
-                              <input
-                                type="checkbox"
-                                checked={selectedCourses.includes(course.code)}
-                                onChange={() => handleCourseToggle(course.code)}
-                                className="course-checkbox"
-                              />
-                              <span className="course-code">{course.code}</span>
-                              <span className="course-name">{course.name}</span>
-                            </label>
-                          </div>
-                        ))}
+                  <h3 className="step-title">
+                    {selectedRole === 'student' && 'Step 3: Class Registration'}
+                    {selectedRole === 'faculty' && 'Step 3: Assign Courses You Handle'}
+                    {selectedRole === 'admin' && 'Step 3: Administrative Scope'}
+                  </h3>
+                  {(selectedRole === 'student' || selectedRole === 'faculty') && (
+                    <div className="class-registration-container">
+                      {/* Left Column: Available Courses */}
+                      <div className="course-pool-column">
+                        <h4 className="column-title">Available Courses</h4>
+                        <div className="course-list">
+                          {availableCourses.map((course) => (
+                            <div key={course.code} className="course-item">
+                              <label className="course-checkbox-label">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedCourses.includes(course.code)}
+                                  onChange={() => handleCourseToggle(course.code)}
+                                  className="course-checkbox"
+                                />
+                                <span className="course-code">{course.code}</span>
+                                <span className="course-name">{course.name}</span>
+                              </label>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    </div>
 
-                    {/* Right Column: My Classes */}
-                    <div className="my-classes-column">
-                      <h4 className="column-title">My Classes</h4>
-                      <div className="selected-courses-list">
-                        {selectedCourses.length === 0 ? (
-                          <p className="no-selection">No courses selected yet</p>
-                        ) : (
-                          selectedCourses.map((courseCode) => {
-                            const course = availableCourses.find((c) => c.code === courseCode);
-                            return (
-                              <div key={courseCode} className="selected-course-item">
-                                <span className="selected-course-code">{course.code}</span>
-                                <span className="selected-course-name">{course.name}</span>
-                                <button
-                                  className="remove-course-btn"
-                                  onClick={() => handleCourseToggle(courseCode)}
-                                  title="Remove course"
-                                >
-                                  ×
-                                </button>
-                              </div>
-                            );
-                          })
-                        )}
+                      {/* Right Column: Selected */}
+                      <div className="my-classes-column">
+                        <h4 className="column-title">{selectedRole === 'student' ? 'My Classes' : 'Assigned Courses'}</h4>
+                        <div className="selected-courses-list">
+                          {selectedCourses.length === 0 ? (
+                            <p className="no-selection">No courses selected yet</p>
+                          ) : (
+                            selectedCourses.map((courseCode) => {
+                              const course = availableCourses.find((c) => c.code === courseCode);
+                              return (
+                                <div key={courseCode} className="selected-course-item">
+                                  <span className="selected-course-code">{course.code}</span>
+                                  <span className="selected-course-name">{course.name}</span>
+                                  <button
+                                    className="remove-course-btn"
+                                    onClick={() => handleCourseToggle(courseCode)}
+                                    title="Remove course"
+                                  >
+                                    ×
+                                  </button>
+                                </div>
+                              );
+                            })
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
+                  {selectedRole === 'admin' && (
+                    <div className="summary-content">
+                      <p>Admins do not register or assign courses at this step. Proceed to continue.</p>
+                    </div>
+                  )}
                   <div className="step-buttons">
                     <button className="auth-back-button" onClick={handleBack}>Back</button>
                     <button className="auth-submit-button" onClick={handleNext}>Next</button>
@@ -495,10 +681,36 @@ const AuthPanel = ({ panel, setPanel }) => {
                 </div>
               )}
 
-              {/* Step 4: Information Summary & Password Setup */}
+              {/* Step 4: Camera Capture (temporary, no DB) */}
               {step === 4 && (
                 <div className="signup-step-container">
-                  <h3 className="step-title">Step 4: Information Summary & Password Setup</h3>
+                  <h3 className="step-title">Step 4: Capture Your Face</h3>
+                  <div className="camera-capture-section">
+                    <div className="camera-preview">
+                      <video ref={videoRef} playsInline muted className="camera-video" />
+                      <canvas ref={canvasRef} style={{ display: 'none' }} />
+                    </div>
+                    <div className="camera-actions">
+                      <button className="auth-submit-button" onClick={handleCapture}>Capture</button>
+                      <button className="auth-back-button" onClick={() => setFaceCapture(null)}>Reset</button>
+                    </div>
+                    {faceCapture && (
+                      <div className="captured-preview">
+                        <img src={faceCapture} alt="Captured face" className="captured-image" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="step-buttons">
+                    <button className="auth-back-button" onClick={handleBack}>Back</button>
+                    <button className="auth-submit-button" onClick={handleNext} disabled={!faceCapture}>Next</button>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 5: Information Summary & Password Setup */}
+              {step === 5 && (
+                <div className="signup-step-container">
+                  <h3 className="step-title">Step 5: Information Summary & Password Setup</h3>
                   
                   {/* Information Summary */}
                   <div className="summary-section">
@@ -517,28 +729,60 @@ const AuthPanel = ({ panel, setPanel }) => {
                       <div className="summary-item">
                         <span className="summary-label">TUPM ID:</span>
                         <span className="summary-value">
-                          {formData.tupmId ? `TUPM - ${formData.tupmId}` : 'N/A'}
+                          {(formData.tupmYear || formData.tupmSerial)
+                            ? `TUPM - ${formData.tupmYear || 'YY'} - ${formData.tupmSerial || '####'}`
+                            : 'N/A'}
                         </span>
                       </div>
                       <div className="summary-item">
-                        <span className="summary-label">Selected Courses:</span>
-                        <div className="summary-courses-list">
-                          {selectedCourses.length === 0 ? (
-                            <span className="summary-value">No courses selected</span>
-                          ) : (
-                            <ul className="courses-summary-list">
-                              {selectedCourses.map((courseCode) => {
-                                const course = availableCourses.find((c) => c.code === courseCode);
-                                return (
-                                  <li key={courseCode} className="course-summary-item">
-                                    <span className="course-summary-code">{course.code}</span>
-                                    <span className="course-summary-name">{course.name}</span>
+                        <span className="summary-label">Role:</span>
+                        <span className="summary-value">
+                          {selectedRole || 'N/A'}
+                        </span>
+                      </div>
+                      {selectedRole === 'faculty' && (
+                        <div className="summary-item">
+                          <span className="summary-label">Handled Sections:</span>
+                          <div className="summary-courses-list">
+                            {(formData.handledSections || []).length === 0 ? (
+                              <span className="summary-value">None</span>
+                            ) : (
+                              <ul className="courses-summary-list">
+                                {(formData.handledSections || []).map((sec) => (
+                                  <li key={sec} className="course-summary-item">
+                                    <span className="course-summary-name">{sec}</span>
                                   </li>
-                                );
-                              })}
-                            </ul>
-                          )}
+                                ))}
+                              </ul>
+                            )}
+                          </div>
                         </div>
+                      )}
+                      {(selectedRole === 'student' || selectedRole === 'faculty') && (
+                        <div className="summary-item">
+                          <span className="summary-label">{selectedRole === 'student' ? 'Selected Courses:' : 'Assigned Courses:'}</span>
+                          <div className="summary-courses-list">
+                            {selectedCourses.length === 0 ? (
+                              <span className="summary-value">No courses selected</span>
+                            ) : (
+                              <ul className="courses-summary-list">
+                                {selectedCourses.map((courseCode) => {
+                                  const course = availableCourses.find((c) => c.code === courseCode);
+                                  return (
+                                    <li key={courseCode} className="course-summary-item">
+                                      <span className="course-summary-code">{course.code}</span>
+                                      <span className="course-summary-name">{course.name}</span>
+                                    </li>
+                                  );
+                                })}
+                              </ul>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      <div className="summary-item">
+                        <span className="summary-label">Face Capture:</span>
+                        <span className="summary-value">{faceCapture ? 'Captured' : 'Not captured'}</span>
                       </div>
                     </div>
                   </div>
@@ -582,7 +826,7 @@ const AuthPanel = ({ panel, setPanel }) => {
 
                   <div className="step-buttons">
                     <button className="auth-back-button" onClick={handleBack}>Back</button>
-                    <button className="auth-submit-button" onClick={handleFinish}>Finish</button>
+                    <button className="auth-submit-button" onClick={handleFinish} disabled={!faceCapture}>Finish</button>
                   </div>
                 </div>
               )}
