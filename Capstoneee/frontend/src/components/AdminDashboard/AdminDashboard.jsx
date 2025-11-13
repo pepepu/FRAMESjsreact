@@ -9,7 +9,7 @@ const FLOOR_PLAN_IMAGE = '/path/to/campus-floor-plan.png';
 
 // --- THEME & USER DEFINITION (RED THEME) ---
 const adminTheme = {
-    primary: '#dc3545', // Primary Red
+    primary: '#A62525', // Primary Red
     dark: '#c82333',
     lightBg: 'rgba(255, 255, 255, 0.15)',
     text: '#FFFFFF'

@@ -1,3 +1,4 @@
+/* --- Universal Header Base --- */
 .universal-header {
     display: flex;
     align-items: center;
@@ -12,6 +13,8 @@
     color: white; /* Default text color */
 }
 
+
+/* --- Left Side: Logo & Search --- */
 .universal-header-logo {
     display: flex;
     align-items: center;
@@ -19,12 +22,14 @@
     font-weight: 700;
 }
 
+
 .header-logo-icon {
     width: 30px;
     height: 30px;
     margin-right: 10px;
     filter: brightness(0) invert(1); /* Makes any icon white */
 }
+
 
 .universal-search-bar {
     display: flex;
@@ -36,9 +41,11 @@
     transition: background-color 0.3s;
 }
 
+
 .universal-search-bar i {
     margin-right: 8px;
 }
+
 
 .universal-search-input {
     border: none;
@@ -47,27 +54,50 @@
     font-size: 0.95em;
     width: 100%;
 }
-/* This makes the placeholder text match the theme text color */
 .universal-search-input::placeholder {
     color: currentColor;
     opacity: 0.7;
 }
 
+
+/* --- Right Side: Actions --- */
 .universal-header-actions {
     margin-left: auto;
     display: flex;
     align-items: center;
 }
 
+
+/* Container for bell to anchor dropdown */
+.notification-bell-container {
+    position: relative;
+    margin-right: 15px; /* Spacing from profile */
+}
+
+
 .universal-header-actions .icon-button {
     background: none;
     border: none;
     font-size: 1.3em;
     cursor: pointer;
-    margin-right: 20px;
     position: relative;
     padding: 5px;
 }
+
+
+.circular-icon-button {
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+.circular-icon-button:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
 
 .universal-header-actions .notification-dot {
     position: absolute;
@@ -86,33 +116,25 @@
     border: 2px solid; /* Color will be set by inline style */
 }
 
-/* --- LOGOUT BUTTON STYLE (*** THIS IS THE FIX ***) --- */
-.universal-header-actions .header-logout-button {
-    display: flex;
-    align-items: center;
-    background: none;
-    
-    /* This is the missing line that makes it visible */
-    border: 1px solid rgba(255, 255, 255, 0.7); 
 
-    border-radius: 6px;
-    padding: 8px 10px;
-    margin-right: 15px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 1.2em;
-    transition: background-color 0.2s;
+/* --- Profile Dropdown --- */
+.profile-menu-container {
+    position: relative; /* Anchor for the dropdown */
 }
-.universal-header-actions .header-logout-button:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-/* --- END LOGOUT BUTTON STYLE --- */
+
 
 .universal-header-actions .user-menu {
     display: flex;
     align-items: center;
     cursor: pointer;
+    padding: 5px 10px; /* Add some padding for easier clicking */
+    border-radius: 8px;
+    transition: background-color 0.2s;
 }
+.universal-header-actions .user-menu:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
 
 .universal-header-actions .user-avatar {
     width: 36px;
@@ -122,13 +144,203 @@
     margin-right: 10px;
 }
 
+
 .universal-header-actions .user-role {
     font-weight: 500;
-    margin-right: 5px;
+    margin-right: 8px; /* Spacing from arrow */
 }
+
+
 .universal-header-actions .dropdown-icon {
     font-size: 0.8em;
+    transition: transform 0.2s ease;
 }
+.universal-header-actions .dropdown-icon.open {
+    transform: rotate(180deg);
+}
+
+
+/* Profile Dropdown Menu Styles */
+.header-dropdown-menu {
+    position: absolute;
+    top: 55px; /* Position below the header item */
+    right: 0;
+    width: 220px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1002;
+    overflow: hidden; /* Ensures border-radius applies to children */
+    padding: 8px 0; /* Spacing for items */
+}
+
+
+.header-dropdown-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: background-color 0.2s;
+    color: #333; /* Default text color for items */
+}
+
+
+.header-dropdown-item i {
+    width: 25px; /* Align icons */
+    margin-right: 10px;
+    opacity: 0.8;
+}
+
+
+.header-dropdown-item:hover {
+    background-color: #f0f2f5; /* Light gray hover */
+}
+
+
+/* Special style for the logout button inside dropdown */
+.dropdown-logout-button {
+    width: 100%;
+    background: none;
+    border: none;
+    text-align: left; /* Align with links */
+    cursor: pointer;
+}
+.dropdown-logout-button:hover {
+    color: #dc3545 !important; /* Highlight logout with theme red on hover */
+    background-color: #f0f2f5; /* Light gray hover */
+}
+
+
+/* --- NEW: Notification Dropdown --- */
+.notification-dropdown-menu {
+    position: absolute;
+    top: 55px; /* Position below the header item */
+    right: 0;
+    width: 360px; /* Wider than profile */
+    max-height: 450px; /* Allow scrolling for long lists */
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1002;
+    padding-top: 0; /* Header will provide padding */
+    display: flex;
+    flex-direction: column;
+}
+
+
+.notification-dropdown-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+}
+
+
+.notification-dropdown-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #333;
+}
+
+
+.notification-dropdown-header .mark-as-read {
+    font-size: 0.8rem;
+    color: #dc3545; /* Theme red */
+    cursor: pointer;
+    font-weight: 500;
+}
+.notification-dropdown-header .mark-as-read:hover {
+    text-decoration: underline;
+}
+
+
+.notification-list {
+    overflow-y: auto; /* Enable scrolling for list */
+    max-height: 320px; /* Control max height before scroll */
+}
+
+
+.notification-item {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #f7f7f7;
+    transition: background-color 0.2s;
+}
+.notification-item:hover {
+    background-color: #f0f2f5; /* Light gray hover */
+}
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+
+.notification-item.unread {
+    background-color: #fbe9e7; /* Light red for unread */
+}
+
+
+.notification-icon-bg {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-right: 15px;
+    background-color: #e0e0e0; /* Gray for read items */
+    color: #555;
+}
+.notification-icon-bg.unread {
+    background-color: #dc3545; /* Theme red for unread */
+    color: white;
+}
+.notification-icon-bg i {
+    font-size: 0.9rem;
+}
+
+
+.notification-content {
+    flex-grow: 1;
+}
+
+
+.notification-text {
+    font-size: 0.9rem;
+    color: #333;
+    line-height: 1.4;
+    margin: 0 0 4px 0;
+}
+
+
+.notification-time {
+    font-size: 0.75rem;
+    color: #888;
+}
+
+
+.notification-dropdown-footer {
+    padding: 12px 20px;
+    text-align: center;
+    border-top: 1px solid #eee;
+    background-color: #fafafa;
+}
+
+
+.notification-dropdown-footer a {
+    text-decoration: none;
+    color: #dc3545; /* Theme red */
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+.notification-dropdown-footer a:hover {
+    text-decoration: underline;
+}
+
+
+
 
 /* --- Responsive --- */
 @media (max-width: 992px) {
@@ -142,21 +354,20 @@
     }
 }
 
+
 @media (max-width: 480px) {
     .universal-header {
         padding: 0 15px;
     }
-    .universal-header-actions .user-role,
-    .universal-header-actions .dropdown-icon {
+    .universal-header-actions .user-role {
         display: none; /* Hide user name */
     }
-    .universal-header-actions .header-logout-button {
-        font-size: 1.1em;
-        padding: 8px;
+    .circular-icon-button {
         margin-right: 10px;
     }
-     .universal-header-actions .icon-button {
-         margin-right: 10px;
-     }
+    /* Make dropdowns take more space on mobile */
+    .notification-dropdown-menu {
+        width: 320px;
+    }
 }
 

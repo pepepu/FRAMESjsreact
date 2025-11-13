@@ -2,13 +2,15 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './StudentDashboard.css';
 import LoggedInHeader from '../ZCommon/LoggedInHeader'; // <-- IMPORT UNIVERSAL HEADER
+import MyProfile from './MyProfile';
+import AttendanceHistory from './AttendanceHistory';
 
 // --- PLACEHOLDERS (UPDATE THESE PATHS) ---
 const STUDENT_AVATAR = '/path/to/student-avatar.png';
 
 // --- THEME & USER DEFINITION ---
 const studentTheme = {
-    primary: '#dc3545', // Primary Red
+    primary: '#A62525', // Primary Red
     dark: '#c82333',
     lightBg: 'rgba(255, 255, 255, 0.15)',
     text: '#FFFFFF'
@@ -28,8 +30,6 @@ const StudentSidebar = ({ activeView, setActiveView }) => {
         { name: 'Dashboard', icon: 'fas fa-th-large', view: 'dashboard' },
         { name: 'My Profile', icon: 'fas fa-user-circle', view: 'profile' },
         { name: 'Attendance History', icon: 'fas fa-history', view: 'attendance' },
-        { name: 'Access Requests', icon: 'fas fa-door-open', view: 'access' },
-        { name: 'Notifications', icon: 'fas fa-bell', view: 'notifications', notification: 3 },
         { name: 'Help', icon: 'fas fa-question-circle', view: 'help' },
     ];
 
@@ -222,19 +222,7 @@ const StudentNotifications = () => (
 
 
 // --- Mockup Components for other views ---
-const MyProfile = () => (
-    <div className="card profile-container">
-        <h2>My Profile</h2>
-        <p>Student profile editing form goes here...</p>
-    </div>
-);
 
-const AttendanceHistory = () => (
-    <div className="card attendance-container">
-        <h2>Attendance History</h2>
-        <p>A detailed view or calendar of all past attendance records goes here...</p>
-    </div>
-);
 
 const AccessRequests = () => (
     <div className="card access-container">

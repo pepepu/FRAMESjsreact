@@ -8,7 +8,7 @@ const FACULTY_AVATAR = '/path/to/faculty-avatar.png';
 
 // --- THEME & USER DEFINITION ---
 const facultyTheme = {
-    primary: '#dc3545', // Primary Red
+    primary: '#A62525', // Primary Red
     dark: '#c82333',
     lightBg: 'rgba(255, 255, 255, 0.15)',
     text: '#FFFFFF'

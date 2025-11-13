@@ -1,0 +1,303 @@
+/* --- Variables (If you use a CSS preprocessor or root variables) --- */
+:root {
+    --primary-color: #e53e3e; /* Red color for main buttons */
+    --secondary-text-color: #6b7280; /* Grey text for labels/details */
+    --border-color: #e5e7eb;
+    --card-bg: #ffffff;
+    --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.05); /* Adjusted shadow for card */
+}
+
+/* 1. Wrapper for the entire view (takes up full available space provided by parent) */
+.profile-view-wrapper {
+    /* Ensures the entire view container fills the available space */
+    width: 100%; 
+    /* The max-width and margin: 0 auto logic from the old container can be optionally applied here 
+       if the parent (main-content-area) is too wide: */
+    max-width: 900px;
+    margin: 0 auto; 
+}
+
+
+/* 2. Style for the Profile Title (now outside the card) */
+.profile-title {
+    font-size: 1.8em;
+    font-weight: 700;
+    color: #1f2937;
+    /* Adds space below the title and separates it from the card */
+    margin-bottom: 25px; 
+    margin-top: 0;
+}
+
+/* 3. Style for the White Content Card (Replaces the old .profile-container) */
+.profile-content-card {
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    box-shadow: var(--shadow-light);
+    /* Padding for the content *inside* the card */
+    padding: 30px; 
+    /* gap: 20px; is unnecessary here unless this container is a flex/grid parent */
+}
+
+
+/* --- Profile Header (Avatar and Status) --- */
+.profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-bottom: 25px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 25px;
+}
+
+.profile-info-block {
+    display: flex;
+    align-items: center;
+}
+
+.profile-avatar {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 20px;
+    border: 3px solid var(--border-color);
+}
+
+.profile-text-info h2 {
+    font-size: 1.5em;
+    font-weight: 600;
+    margin: 0 0 5px 0;
+}
+
+.student-id-text {
+    color: var(--secondary-text-color);
+    font-size: 0.9em;
+    margin-bottom: 5px;
+}
+
+.student-status {
+    display: flex;
+    align-items: center;
+    font-size: 0.9em;
+    color: var(--secondary-text-color);
+    margin-bottom: 10px;
+}
+
+.status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+    background-color: #10b981; /* Green for active */
+}
+
+.btn-active-student {
+    background-color: #d1fae5; /* Light green background */
+    color: #065f46; /* Dark green text */
+    border: none;
+    padding: 5px 12px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    font-weight: 600;
+    cursor: default;
+}
+
+.btn-edit-profile {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-edit-profile:hover {
+    background-color: #c53030;
+}
+
+/* --- Section Styling (Information Blocks) --- */
+.profile-section {
+    padding: 25px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.profile-section:last-of-type {
+    border-bottom: none; /* No border for the last section before the footer */
+}
+
+.profile-section h3 {
+    font-size: 1.1em;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 15px;
+}
+
+/* --- Grid for Inputs (2 columns) --- */
+.profile-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px 30px;
+}
+
+.input-group label {
+    display: block;
+    font-size: 0.85em;
+    color: var(--secondary-text-color);
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.input-group input,
+.input-group textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: #f9fafb; /* Light grey background for read-only fields */
+    color: #1f2937;
+    font-size: 0.95em;
+    /* Remove default focus outline if fields are read-only */
+    outline: none; 
+}
+
+.input-group input:focus,
+.input-group textarea:focus {
+    border-color: #9ca3af;
+}
+
+.input-group textarea {
+    resize: vertical;
+}
+
+.input-group.full-width {
+    grid-column: 1 / -1; /* Spans across both columns */
+}
+
+/* --- Account Settings Specific Styles --- */
+.account-settings-section {
+    padding-bottom: 0;
+}
+
+.setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.setting-row:last-child {
+    border-bottom: none;
+}
+
+.setting-text h4 {
+    font-size: 1em;
+    font-weight: 600;
+    margin: 0;
+}
+
+.setting-text p {
+    font-size: 0.85em;
+    color: var(--secondary-text-color);
+    margin: 2px 0 0 0;
+}
+
+.secondary-btn {
+    background: #f3f4f6;
+    color: #4b5563;
+    border: 1px solid #d1d5db;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+    font-size: 0.9em;
+}
+
+.secondary-btn i {
+    margin-right: 5px;
+}
+
+.secondary-btn:hover {
+    background-color: #e5e7eb;
+}
+
+.enabled-2fa {
+    color: #10b981;
+    border-color: #10b981;
+    background-color: #d1fae5;
+}
+
+.enabled-2fa:hover {
+    background-color: #a7f3d0;
+}
+
+/* --- Footer Buttons --- */
+.profile-footer-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-top: 25px;
+}
+
+.btn-cancel {
+    background: none;
+    color: #6b7280;
+    border: none;
+    padding: 10px 20px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.btn-cancel:hover {
+    color: #1f2937;
+}
+
+.btn-save-changes {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-save-changes:hover {
+    background-color: #c53030;
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 768px) {
+    .profile-content-card { /* Target the content card */
+        padding: 20px;
+    }
+
+    .profile-grid {
+        grid-template-columns: 1fr; /* Stack columns on smaller screens */
+    }
+
+    .profile-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .profile-info-block {
+        flex-direction: column;
+        margin-bottom: 20px;
+    }
+
+    .profile-avatar {
+        margin: 0 0 15px 0;
+    }
+
+    .btn-edit-profile {
+        width: 100%;
+    }
+}
